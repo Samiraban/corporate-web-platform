@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Serif 4', Georgia, serif;
+  }
+  *:focus-visible {
+    outline: 2px solid #003893;
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+    /* Custom cursor replaces the native pointer everywhere, but only when
+     it's actually rendered (fine pointer + motion allowed) — matches
+     CustomCursor.jsx's own guard. The universal selector + !important is
+     needed because Tailwind's `cursor-pointer` utility (used all over
+     buttons, inputs, cards) lives in the utilities layer, which otherwise
+     wins over a plain base-layer rule and leaves the native cursor showing
+     in scattered spots. */
+  @media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+    *, *::before, *::after {
+      cursor: none !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto max-w-7xl px-6 lg:px-10;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-ink-900 text-white px-6 py-3 text-sm font-medium tracking-wide hover:bg-ink-800 transition-colors;
+  }
+  .btn-outline {
+    @apply inline-flex items-center gap-2 border border-ink-900 text-ink-900 px-6 py-3 text-sm font-medium tracking-wide hover:bg-ink-900 hover:text-white transition-colors;
+  }
+  .btn-brass {
+    @apply inline-flex items-center gap-2 bg-brass-500 text-white px-6 py-3 text-sm font-semibold tracking-wide hover:bg-brass-600 transition-colors;
+  }
+  .section {
+    @apply py-16 sm:py-20 lg:py-28;
+  }
+  .eyebrow {
+    @apply text-brass-600 text-sm font-medium;
+  }
+}
