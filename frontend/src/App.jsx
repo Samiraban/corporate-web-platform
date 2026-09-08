@@ -28,6 +28,8 @@ import SearchPage from './pages/SearchPage';
 import NotFound from './pages/NotFound';
 
 import AdminLogin from './admin/pages/Login';
+import ForgotPassword from './admin/pages/ForgotPassword';
+import ResetPassword from './admin/pages/ResetPassword';
 import ProtectedRoute from './admin/ProtectedRoute';
 import AdminLayout from './admin/AdminLayout';
 import Dashboard from './admin/pages/Dashboard';
@@ -114,6 +116,8 @@ export default function App() {
 
           {/* Admin panel — no page-transition wrapper, kept snappy for data work */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin/reset-password/:token" element={<ResetPassword />} />
           <Route
             path="/admin"
             element={
