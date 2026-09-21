@@ -1,28 +1,38 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 export default function PublicLayout({ children }) {
+  const location = useLocation();
   const navigate = useNavigate();
 
-  // Hidden admin entry point: no visible link anywhere on the public
-  // site. Press Ctrl+Shift+A from any page to reach the admin login.
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
-        e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (
+        event.ctrlKey &&
+        event.shiftKey &&
+        event.key.toLowerCase() === 'a'
+      ) {
+        event.preventDefault();
         navigate('/admin/login');
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-white text-ink-900">
       <Header />
-      <main className="flex-1">{children}</main>
+      <main className="min-h-[calc(100vh-78px)] pt-[78px] md:pt-[82px]">
+        {children}
+      </main>
       <Footer />
     </div>
   );

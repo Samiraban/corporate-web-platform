@@ -1,26 +1,25 @@
-import { useState, useEffect } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, ChevronDown, Search } from 'lucide-react';
-import MagneticButton from './anim/MagneticButton';
+import { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { ChevronDown, Menu, Search, X, ArrowUpRight } from 'lucide-react';
 
 const NAV = [
- {
-  label: 'About',
-  to: '/about',
-  children: [
-    { label: 'Who We Are', to: '/about/who-we-are' },
-    { label: 'Our Values', to: '/about/our-values' },
-    { label: 'How We Work', to: '/about/how-we-work' },
-    { label: 'Our Network', to: '/about/our-network' },
-  ],
-},
+  {
+    label: 'About',
+    to: '/about/who-we-are',
+    children: [
+      ['Who We Are', '/about/who-we-are'],
+      ['Our Values', '/about/our-values'],
+      ['How We Work', '/about/how-we-work'],
+      ['Our Network', '/about/our-network'],
+    ],
+  },
   {
     label: 'Group Companies',
     to: '/companies',
     children: [
-      { label: 'All Companies', to: '/companies' },
-      { label: 'Industries We Serve', to: '/industries' },
+      ['All Companies', '/companies'],
+      ['Industries We Serve', '/industries'],
     ],
   },
   { label: 'Services', to: '/services' },
@@ -29,185 +28,248 @@ const NAV = [
     label: 'Insights',
     to: '/blog',
     children: [
-      { label: 'Blog', to: '/blog' },
-      { label: 'News & Announcements', to: '/news' },
+      ['Blog', '/blog'],
+      ['News & Announcements', '/news'],
     ],
   },
-{
-  label: 'Our People',
-  to: '/team',
-  children: [
-    { label: 'Leadership', to: '/team' },
-    { label: 'The Heart of OS Group', to: '/team/culture' },
-  ],
-},
-{ label: 'Careers', to: '/careers' },
+  {
+    label: 'Our People',
+    to: '/team',
+    children: [
+      ['Leadership', '/team'],
+      ['The Heart of OS Group', '/team/culture'],
+    ],
+  },
+  { label: 'Careers', to: '/careers' },
   { label: 'Contact', to: '/contact' },
 ];
 
+const ease = [0.16, 1, 0.3, 1];
+
+function navClass({ isActive }) {
+  return [
+    'relative inline-flex min-h-10 items-center gap-1.5 rounded-full px-3',
+    'text-[13px] font-semibold tracking-[-0.01em] transition-colors duration-200',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8c6bd9] focus-visible:ring-offset-2',
+    isActive ? 'text-[#6f4fb0]' : 'text-[#343047] hover:text-[#7657b7]',
+  ].join(' ');
+}
+
 export default function Header() {
-  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [dropdown, setDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
+    const handleScroll = () => setScrolled(window.scrollY > 12);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setDropdown(null);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [mobileOpen]);
 
   return (
     <motion.header
-      initial={{ y: -80, opacity: 0 }}
+      initial={{ y: -24, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      className={`sticky top-0 z-40 transition-all duration-500 ${
-        scrolled ? 'bg-canvas/80 backdrop-blur-md shadow-sm' : 'bg-canvas/95 backdrop-blur'
-      }`}
+      transition={{ duration: 0.55, ease }}
+      className="fixed inset-x-0 top-0 z-[100] px-2 pt-2 sm:px-3 lg:px-4"
     >
-      <div className="container-page flex items-center justify-between h-20">
-        <Link to="/" className="flex items-center gap-2 group">
-          <motion.span
-            className="font-serif text-2xl font-semibold text-ink-900"
-            whileHover={{ letterSpacing: '0.01em' }}
-            transition={{ duration: 0.3 }}
+      <div
+        className={[
+          'mx-auto max-w-[1500px] rounded-[18px] border bg-white/95 backdrop-blur-xl',
+          'transition-all duration-300',
+          scrolled
+            ? 'border-[#ddd5ec] shadow-[0_12px_35px_rgba(82,58,128,0.10)]'
+            : 'border-[#e8e2f0] shadow-[0_5px_20px_rgba(82,58,128,0.06)]',
+        ].join(' ')}
+      >
+        <div className="container-page flex min-h-[68px] items-center justify-between gap-4 lg:min-h-[72px]">
+          <Link
+            to="/"
+            aria-label="OS Group home"
+            className="shrink-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8c6bd9] focus-visible:ring-offset-2"
           >
-            OS Group
-          </motion.span>
-          <span className="hidden sm:block text-[11px] text-ash tracking-wide self-end mb-1">
-            OF COMPANY
-          </span>
-        </Link>
-
-        <nav className="hidden lg:flex items-center gap-8">
-          {NAV.map((item, i) => (
-            <motion.div
-              key={item.label}
-              className="relative group"
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.15 + i * 0.05 }}
-            >
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  `relative text-sm font-medium flex items-center gap-1 py-2 ${
-                    isActive ? 'text-brass-500' : 'text-ink-900'
-                  } transition-colors`
-                }
-              >
-                {({ isActive }) => (
-                  <>
-                    {item.label}
-                    {item.children && <ChevronDown size={14} />}
-                    <motion.span
-                      className="absolute -bottom-0.5 left-0 h-[1.5px] bg-brass-500"
-                      initial={{ width: isActive ? '100%' : '0%' }}
-                      animate={{ width: isActive ? '100%' : '0%' }}
-                      whileHover={{ width: '100%' }}
-                      transition={{ duration: 0.25 }}
-                    />
-                  </>
-                )}
-              </NavLink>
-              {item.children && (
-                <div className="absolute left-0 top-full w-56 bg-white border border-ink-100 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-300 py-2 origin-top">
-                  {item.children.map((c) => (
-                    <Link
-                      key={c.to}
-                      to={c.to}
-                      className="block px-4 py-2.5 text-sm text-ink-800 hover:bg-ink-50 hover:text-brass-500 hover:pl-5 transition-all"
-                    >
-                      {c.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </nav>
-
-        <motion.div
-          className="hidden lg:flex items-center gap-4"
-          initial={{ opacity: 0, x: 12 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <Link to="/search" aria-label="Search the site" className="text-ink-900 hover:text-brass-500 transition-colors">
-            <Search size={19} />
-          </Link>
-          <MagneticButton as={Link} to="/contact" className="btn-primary" strength={0.2}>
-            Get in Touch
-          </MagneticButton>
-        </motion.div>
-
-        <button
-          className="lg:hidden text-ink-900 relative z-10"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={open ? 'close' : 'open'}
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
+            <motion.img
+              src="/images/os-group-logo.png"
+              alt="OS Group"
+              whileHover={{ scale: 1.02 }}
               transition={{ duration: 0.2 }}
-              className="block"
-            >
-              {open ? <X size={26} /> : <Menu size={26} />}
-            </motion.span>
-          </AnimatePresence>
-        </button>
-      </div>
+              className="h-12 w-auto max-w-[175px] object-contain md:h-14 md:max-w-[205px]"
+            />
+          </Link>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="lg:hidden border-t border-ink-100 bg-white overflow-hidden"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <motion.div
-              className="container-page py-4 flex flex-col gap-1"
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.06 } } }}
-            >
-              {NAV.map((item) => (
-                <motion.div
-                  key={item.label}
-                  variants={{ hidden: { opacity: 0, x: -16 }, visible: { opacity: 1, x: 0 } }}
-                >
-                  <Link
-                    to={item.to}
-                    onClick={() => setOpen(false)}
-                    className="block py-3 text-ink-900 font-medium border-b border-ink-50"
+          <nav className="hidden items-center gap-0.5 lg:flex" aria-label="Primary navigation">
+            {NAV.map((item) => (
+              <div
+                key={item.label}
+                className="relative"
+                onMouseEnter={() => item.children && setDropdown(item.label)}
+                onMouseLeave={() => item.children && setDropdown(null)}
+              >
+                {item.children ? (
+                  <button
+                    type="button"
+                    className={navClass({
+                      isActive:
+                        location.pathname.startsWith(item.to) ||
+                        item.children.some(([, to]) => location.pathname.startsWith(to)),
+                    })}
+                    aria-expanded={dropdown === item.label}
+                    onClick={() => setDropdown(dropdown === item.label ? null : item.label)}
                   >
                     {item.label}
-                  </Link>
-                  {item.children?.map((c) => (
-                    <Link
-                      key={c.to}
-                      to={c.to}
-                      onClick={() => setOpen(false)}
-                      className="block py-2 pl-4 text-sm text-ash"
+                    <ChevronDown
+                      size={14}
+                      aria-hidden="true"
+                      className={`transition-transform duration-200 ${dropdown === item.label ? 'rotate-180' : ''}`}
+                    />
+                  </button>
+                ) : (
+                  <NavLink to={item.to} className={navClass}>
+                    {item.label}
+                  </NavLink>
+                )}
+
+                <AnimatePresence>
+                  {item.children && dropdown === item.label && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 7, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 5, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease }}
+                      className="absolute left-1/2 top-[calc(100%+8px)] w-[290px] -translate-x-1/2 rounded-2xl border border-[#ddd4eb] bg-white p-2.5 shadow-[0_18px_45px_rgba(82,58,128,0.14)]"
                     >
-                      {c.label}
-                    </Link>
-                  ))}
-                </motion.div>
-              ))}
-              <motion.div variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}>
-                <Link to="/contact" onClick={() => setOpen(false)} className="btn-primary mt-4 justify-center w-full">
-                  Get in Touch
-                </Link>
-              </motion.div>
+                      {item.children.map(([label, to]) => (
+                        <NavLink
+                          key={to}
+                          to={to}
+                          className={({ isActive }) =>
+                            [
+                              'group flex min-h-12 items-center justify-between rounded-xl px-3.5 py-3 text-sm font-bold leading-5 transition-colors',
+                              isActive
+                                ? 'bg-[#eee5fa] text-[#60429a]'
+                                : 'text-[#172033] hover:bg-[#f5f0fb] hover:text-[#6848a5]',
+                            ].join(' ')
+                          }
+                        >
+                          <span className="pr-3">{label}</span>
+                          <ArrowUpRight size={14} className="opacity-40 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </NavLink>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ))}
+          </nav>
+
+          <div className="hidden items-center gap-2 lg:flex">
+            <Link
+              to="/search"
+              aria-label="Search"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#e1dbea] bg-white text-[#454055] transition-all duration-200 hover:border-[#c9b8e7] hover:bg-[#f7f3fc] hover:text-[#7657b7] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8c6bd9] focus-visible:ring-offset-2"
+            >
+              <Search size={17} aria-hidden="true" />
+            </Link>
+
+            <Link
+              to="/contact"
+              className="group inline-flex min-h-10 items-center gap-2 rounded-full bg-[#7d5bc4] px-5 text-sm font-bold text-white shadow-[0_8px_22px_rgba(125,91,196,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#6f4fb0] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8c6bd9] focus-visible:ring-offset-2"
+            >
+              Get in Touch
+              <ArrowUpRight size={15} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMobileOpen((value) => !value)}
+            aria-expanded={mobileOpen}
+            aria-controls="mobile-navigation"
+            aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-[#e1dbea] bg-white text-[#343047] transition-colors hover:bg-[#f7f3fc] lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8c6bd9] focus-visible:ring-offset-2"
+          >
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {mobileOpen && (
+            <motion.div
+              id="mobile-navigation"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.28, ease }}
+              className="overflow-hidden border-t border-[#ebe6f2] lg:hidden"
+            >
+              <nav className="max-h-[calc(100vh-86px)] overflow-y-auto px-4 py-4" aria-label="Mobile navigation">
+                {NAV.map((item, index) => (
+                  <div key={item.label} className="border-b border-[#eeeaf4] last:border-0">
+                    {item.children ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setDropdown(dropdown === item.label ? null : item.label)}
+                          aria-expanded={dropdown === item.label}
+                          className="flex w-full items-center justify-between py-3.5 text-left text-sm font-bold text-[#343047]"
+                        >
+                          {item.label}
+                          <ChevronDown size={16} className={`transition-transform ${dropdown === item.label ? 'rotate-180' : ''}`} />
+                        </button>
+                        <AnimatePresence>
+                          {dropdown === item.label && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="overflow-hidden pb-2 pl-3"
+                            >
+                              {item.children.map(([label, to]) => (
+                                <Link key={to} to={to} className="block rounded-xl px-3 py-2.5 text-sm font-bold leading-5 text-[#263247] hover:bg-[#f5f0fb] hover:text-[#6848a5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8c6bd9]">
+                                  {label}
+                                </Link>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </>
+                    ) : (
+                      <Link to={item.to} className="block py-3.5 text-sm font-bold text-[#343047] hover:text-[#7657b7]">
+                        {item.label}
+                      </Link>
+                    )}
+                  </div>
+                ))}
+
+                <div className="flex gap-2 pt-4">
+                  <Link to="/search" className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full border border-[#ddd5ea] bg-white text-sm font-bold text-[#454055]">
+                    <Search size={16} /> Search
+                  </Link>
+                  <Link to="/contact" className="flex h-11 flex-1 items-center justify-center rounded-full bg-[#7d5bc4] text-sm font-bold text-white">
+                    Contact us
+                  </Link>
+                </div>
+              </nav>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.header>
   );
 }
